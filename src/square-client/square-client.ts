@@ -8,8 +8,8 @@ export class SquareClient {
   
     constructor(configService: ConfigService) {
       this.squareClient = new Client({
-        accessToken: configService.get<string>('SQUARE_ACCESS_TOKEN'),
-        environment: Environment.Sandbox,
+        accessToken: process.env.SQUARE_ACCESS_TOKEN || configService.get<string>('SQUARE_ACCESS_TOKEN'),
+        environment: process.env.NODE_ENV ? Environment.Production : Environment.Sandbox
       });
     }
   
