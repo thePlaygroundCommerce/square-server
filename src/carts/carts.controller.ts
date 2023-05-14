@@ -19,20 +19,17 @@ import {
   UpdateOrderResponse,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
-import { JsonUtil } from 'src/json-util/json-util';
 
 @Controller('carts')
 export class CartsController {
   ordersApi: OrdersApi;
-  jsonUtil: JsonUtil;
 
-  constructor(SquareClient: SquareClient, jsonUtil: JsonUtil) {
+  constructor(SquareClient: SquareClient) {
     this.ordersApi = SquareClient.getClient().ordersApi;
-    this.jsonUtil = jsonUtil;
   }
 
   @Post('create')
-  async createCart(@Body() { order }: CreateOrderRequest): Promise<string> {
+  async createCart(@Body() { order }: CreateOrderRequest): Promise<ApiResponse<CreateOrderResponse>> {
     const { state, lineItems } = order;
 
     try {
@@ -44,8 +41,7 @@ export class CartsController {
             lineItems,
           },
           idempotencyKey: uidv4(),
-        })
-        .then((res) => this.jsonUtil.prepareForTransport(res));
+        });
     } catch (error) {
       console.log(error);
     }
@@ -55,7 +51,7 @@ export class CartsController {
   async updateCart(
     @Body() { order }: UpdateOrderRequest,
     @Param('orderId') { orderId }: { orderId: string },
-  ): Promise<string> {
+  ): Promise<ApiResponse<UpdateOrderResponse>> {
     const { state, lineItems } = order;
 
     try {
@@ -68,7 +64,6 @@ export class CartsController {
           },
           idempotencyKey: uidv4(),
         })
-        .then((res) => this.jsonUtil.prepareForTransport(res));
     } catch (error) {
       console.log(error);
     }
@@ -77,11 +72,10 @@ export class CartsController {
   @Get(':orderId')
   async getCart(
     @Param('orderId') { orderId }: { orderId: string },
-  ): Promise<string> {
+  ): Promise<ApiResponse<RetrieveOrderResponse>> {
     try {
       return await this.ordersApi
         .retrieveOrder(orderId)
-        .then((res) => this.jsonUtil.prepareForTransport(res));
     } catch (error) {
       return error;
     }

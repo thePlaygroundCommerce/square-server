@@ -8,7 +8,6 @@ import {
   UpdatePaymentLinkRequest,
   UpdatePaymentLinkResponse,
 } from 'square';
-import { JsonUtil } from 'src/json-util/json-util';
 import { SquareClient } from 'src/square-client/square-client';
 import { v4 as uidv4 } from 'uuid';
 // import SquareClient from 'src/main';
@@ -16,17 +15,15 @@ import { v4 as uidv4 } from 'uuid';
 @Controller('checkout')
 export class CheckoutController {
   checkoutApi: CheckoutApi;
-  jsonUtil: JsonUtil;
 
-  constructor(SquareClient: SquareClient, jsonUtil: JsonUtil) {
+  constructor(SquareClient: SquareClient) {
     this.checkoutApi = SquareClient.getClient().checkoutApi;
-    this.jsonUtil = jsonUtil;
   }
 
   @Post()
   async getCheckoutUrl(
     @Body() { order }: CreatePaymentLinkRequest,
-  ): Promise<string> {
+  ): Promise<ApiResponse<UpdatePaymentLinkResponse>> {
     try {
       const { id, orderId, ...rest } = await this.checkoutApi
         .createPaymentLink({
@@ -45,7 +42,6 @@ export class CheckoutController {
             },
           },
         })
-        .then((res) => this.jsonUtil.prepareForTransport(res));
     } catch (error) {
       console.log(error);
     }

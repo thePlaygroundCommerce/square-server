@@ -6,7 +6,6 @@ import { ConfigModule } from '@nestjs/config';
 import { SquareClient } from './square-client/square-client';
 import { CatalogApiService } from './catalog-api/catalog-api.service';
 import { OrderApiService } from './order-api/order-api.service';
-import { JsonUtil } from './json-util/json-util';
 
 @Module({
   imports: [
@@ -19,6 +18,6 @@ import { JsonUtil } from './json-util/json-util';
     CatalogController,
     CheckoutController,
   ],
-  providers: [ SquareClient, CatalogApiService, OrderApiService, JsonUtil]
+  providers: [ SquareClient, CatalogApiService, OrderApiService]
 })
 export class AppModule {}
