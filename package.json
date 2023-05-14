@@ -1,5 +1,5 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "square-backend",
   "private": true,
   "version": "1.0.0",
   "description": "Nest TypeScript starter repository",
@@ -8,6 +8,7 @@
     "node": "18.x"
   },
   "scripts": {
+    "heroku-prebuild": "yarn global add nest",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
