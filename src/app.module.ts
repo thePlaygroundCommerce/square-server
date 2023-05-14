@@ -1,10 +1,24 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { CartsController } from './carts/carts.controller';
+import { CatalogController } from './catalog/catalog.controller';
+import { CheckoutController } from './checkout/checkout.controller';
+import { ConfigModule } from '@nestjs/config';
+import { SquareClient } from './square-client/square-client';
+import { CatalogApiService } from './catalog-api/catalog-api.service';
+import { OrderApiService } from './order-api/order-api.service';
+import { JsonUtil } from './json-util/json-util';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.env.local',
+    }),
+  ],
+  controllers: [
+    CartsController,
+    CatalogController,
+    CheckoutController,
+  ],
+  providers: [ SquareClient, CatalogApiService, OrderApiService, JsonUtil]
 })
 export class AppModule {}
