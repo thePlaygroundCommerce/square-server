@@ -1,4 +1,4 @@
-import { Body, Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Param } from '@nestjs/common';
 import {
   ApiResponse,
   ListCatalogResponse,
@@ -49,9 +49,9 @@ export class CatalogController {
       }
     }
   }
-  @Get('retrieve')
+  @Get(['retrieve', ':slug'])
   async retrieveCatalogObject(
-    @Body() { slug }: { slug: string },
+    @Param() { slug }: { slug: string },
   ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
     try {
       return await this.catalogApi.retrieveCatalogObject(slug);
