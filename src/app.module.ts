@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SquareClient } from './square-client/square-client';
 import { CatalogApiService } from './catalog-api/catalog-api.service';
 import { OrderApiService } from './order-api/order-api.service';
+import { CustomerController } from './customer/customer.controller';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { OrderApiService } from './order-api/order-api.service';
     CartsController,
     CatalogController,
     CheckoutController,
+    CustomerController,
   ],
   providers: [ SquareClient, CatalogApiService, OrderApiService]
 })

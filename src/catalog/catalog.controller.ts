@@ -6,6 +6,8 @@ import {
   BatchRetrieveCatalogObjectsResponse,
   BatchRetrieveCatalogObjectsRequest,
   CatalogApi,
+  RetrieveCatalogObjectRequest,
+  RetrieveCatalogObjectResponse,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
 
@@ -17,12 +19,16 @@ export class CatalogController {
     this.catalogApi = SquareClient.getClient().catalogApi;
   }
 
-  @Get('objects')
-  async listCatalogObjects(): Promise<ApiResponse<ListCatalogResponse>> {
-    
-
+  @Get()
+  async getCatalogObjects(
+    @Body()
+    { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
+  ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
     try {
-      return await this.catalogApi.listCatalog(undefined, 'IMAGE,ITEM')
+      return await this.catalogApi.batchRetrieveCatalogObjects({
+        objectIds,
+        includeRelatedObjects,
+      });
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
@@ -32,17 +38,24 @@ export class CatalogController {
     }
   }
 
-  @Get()
-  async getCatalogObjects(
-    @Body()
-    { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
-  ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
+  @Get('objects')
+  async listCatalogObjects(): Promise<ApiResponse<ListCatalogResponse>> {
     try {
-      return await this.catalogApi
-        .batchRetrieveCatalogObjects({
-          objectIds,
-          includeRelatedObjects,
-        })
+      return await this.catalogApi.listCatalog(undefined, 'IMAGE,ITEM');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return error.result;
+      } else {
+        console.log('Unexpected error occurred: ', error);
+      }
+    }
+  }
+  @Get('retrieve')
+  async retrieveCatalogObject(
+    @Body() { slug }: { slug: string },
+  ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
+    try {
+      return await this.catalogApi.retrieveCatalogObject(slug);
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
