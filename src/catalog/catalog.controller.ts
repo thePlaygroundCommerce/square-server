@@ -6,7 +6,6 @@ import {
   BatchRetrieveCatalogObjectsResponse,
   BatchRetrieveCatalogObjectsRequest,
   CatalogApi,
-  RetrieveCatalogObjectRequest,
   RetrieveCatalogObjectResponse,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
