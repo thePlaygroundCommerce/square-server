@@ -18,25 +18,6 @@ export class CatalogController {
     this.catalogApi = SquareClient.getClient().catalogApi;
   }
 
-  @Get()
-  async getCatalogObjects(
-    @Body()
-    { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
-  ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
-    try {
-      return await this.catalogApi.batchRetrieveCatalogObjects({
-        objectIds,
-        includeRelatedObjects,
-      });
-    } catch (error) {
-      if (error instanceof ApiError) {
-        return error.result;
-      } else {
-        console.log('Unexpected error occurred: ', error);
-      }
-    }
-  }
-
   @Get('objects')
   async listCatalogObjects(): Promise<ApiResponse<ListCatalogResponse>> {
     try {
@@ -49,12 +30,33 @@ export class CatalogController {
       }
     }
   }
-  @Get(['retrieve', ':slug'])
+
+  @Get(':slug')
   async retrieveCatalogObject(
     @Param() { slug }: { slug: string },
   ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
+    console.log(slug);
     try {
       return await this.catalogApi.retrieveCatalogObject(slug);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return error.result;
+      } else {
+        console.log('Unexpected error occurred: ', error);
+      }
+    }
+  }
+
+  @Get()
+  async getCatalogObjects(
+    @Body()
+    { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
+  ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
+    try {
+      return await this.catalogApi.batchRetrieveCatalogObjects({
+        objectIds,
+        includeRelatedObjects,
+      });
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
