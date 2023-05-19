@@ -34,10 +34,11 @@ export class CatalogController {
   @Get(':slug')
   async retrieveCatalogObject(
     @Param() { slug }: { slug: string },
-  ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
+  ): Promise<RetrieveCatalogObjectResponse> {
     console.log(slug);
     try {
-      return await this.catalogApi.retrieveCatalogObject(slug);
+      return await this.catalogApi.retrieveCatalogObject(slug)
+      .then(res => res.result);
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
