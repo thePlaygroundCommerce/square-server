@@ -13,6 +13,7 @@ import {
   ApiResponse,
   CreateOrderRequest,
   CreateOrderResponse,
+  OrderLineItem,
   OrdersApi,
   RetrieveOrderResponse,
   UpdateOrderRequest,
@@ -29,41 +30,44 @@ export class CartsController {
   }
 
   @Post('create')
-  async createCart(@Body() { order }: CreateOrderRequest): Promise<ApiResponse<CreateOrderResponse>> {
-    const { state, lineItems } = order;
+  async createCart(
+    @Body() { order: { state, lineItems } }: CreateOrderRequest,
+  ): Promise<ApiResponse<CreateOrderResponse>> {
+    console.log('Create Cart Request Received : ');
 
     try {
-      return await this.ordersApi
-        .createOrder({
-          order: {
-            locationId: 'LFX4KWJMYHQZ3',
-            state: state,
-            lineItems,
-          },
-          idempotencyKey: uidv4(),
-        });
+      return await this.ordersApi.createOrder({
+        order: {
+          locationId: 'LFX4KWJMYHQZ3',
+          state,
+          lineItems,
+        },
+        idempotencyKey: uidv4(),
+      });
     } catch (error) {
       console.log(error);
     }
   }
 
-  @Put(['update', ':orderId'])
+  @Put('update/:orderId')
   async updateCart(
-    @Body() { order }: UpdateOrderRequest,
-    @Param('orderId') { orderId }: { orderId: string },
+    @Body()
+    { version, state, lineItems }: { version: number, state: string; lineItems: Array<OrderLineItem> },
+    @Param('orderId') orderId: string,
   ): Promise<ApiResponse<UpdateOrderResponse>> {
-    const { state, lineItems } = order;
+    console.log('Update Cart Request Received : ' + orderId);
 
     try {
-      return await this.ordersApi
-        .updateOrder(orderId, {
-          order: {
-            locationId: 'LFX4KWJMYHQZ3',
-            state: state,
-            lineItems,
-          },
-          idempotencyKey: uidv4(),
-        })
+      const result = await this.ordersApi.updateOrder(orderId, {
+        order: {
+          locationId: 'LFX4KWJMYHQZ3',
+          version,
+          state,
+          lineItems,
+        },
+        idempotencyKey: uidv4(),
+      });
+      return result;
     } catch (error) {
       console.log(error);
     }
@@ -71,15 +75,13 @@ export class CartsController {
 
   @Get(':orderId')
   async getCart(
-    @Param('orderId') { orderId }: { orderId: string },
+    @Param('orderId') orderId,
   ): Promise<ApiResponse<RetrieveOrderResponse>> {
     try {
-      return await this.ordersApi
-        .retrieveOrder(orderId)
+      console.log('Get Cart Request Received : ' + orderId);
+      return await this.ordersApi.retrieveOrder(orderId);
     } catch (error) {
       return error;
     }
   }
-
-  
 }

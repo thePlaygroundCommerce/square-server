@@ -1,10 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import {
   ApiResponse,
   CheckoutApi,
   CreateCheckoutRequest,
   CreateCheckoutResponse,
   CreatePaymentLinkRequest,
+  OrdersApi,
+  RetrieveOrderResponse,
   UpdatePaymentLinkRequest,
   UpdatePaymentLinkResponse,
 } from 'square';
@@ -15,21 +17,24 @@ import { v4 as uidv4 } from 'uuid';
 @Controller('checkout')
 export class CheckoutController {
   checkoutApi: CheckoutApi;
+  ordersApi: OrdersApi;
 
   constructor(SquareClient: SquareClient) {
     this.checkoutApi = SquareClient.getClient().checkoutApi;
+    this.ordersApi = SquareClient.getClient().ordersApi;
   }
 
   @Post()
   async getCheckoutUrl(
-    @Body() { order }: CreatePaymentLinkRequest,
+    @Body() { order, checkoutOptions }: CreatePaymentLinkRequest,
   ): Promise<ApiResponse<UpdatePaymentLinkResponse>> {
+    console.log("Checkout Request Received")
+
     try {
       const { id, orderId, ...rest } = await this.checkoutApi
         .createPaymentLink({
           idempotencyKey: uidv4(),
           order: { locationId: 'LFX4KWJMYHQZ3', lineItems: order.lineItems },
-          checkoutOptions: { redirectUrl: 'http://localhost:3000/checkout/' },
         })
         .then((res) => res.result.paymentLink);
 
@@ -38,10 +43,22 @@ export class CheckoutController {
           paymentLink: {
             ...rest,
             checkoutOptions: {
-              redirectUrl: 'http://localhost:3000/checkout/' + orderId,
+              redirectUrl: checkoutOptions && checkoutOptions.redirectUrl + orderId,
             },
           },
         })
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get(['order/:orderId'])
+  async getOrder(
+    @Param() { orderId },
+  ): Promise<ApiResponse<RetrieveOrderResponse>> {
+    console.log('Order Request Received' + orderId);
+    try {
+      return await this.ordersApi.retrieveOrder(orderId);
     } catch (error) {
       console.log(error);
     }

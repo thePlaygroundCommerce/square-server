@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
   ApiResponse,
   ListCatalogResponse,
@@ -14,14 +14,19 @@ import { SquareClient } from 'src/square-client/square-client';
 export class CatalogController {
   catalogApi: CatalogApi;
 
+  private static DEFAULT_CATALOG_ITEM_TYPES = "";
+
   constructor(SquareClient: SquareClient) {
     this.catalogApi = SquareClient.getClient().catalogApi;
   }
 
   @Get('objects')
-  async listCatalogObjects(): Promise<ApiResponse<ListCatalogResponse>> {
+  async listCatalogObjects(@Query() query: any): Promise<ApiResponse<ListCatalogResponse>> {
+    console.log('Catalog request received!');
     try {
-      return await this.catalogApi.listCatalog(undefined, 'IMAGE,ITEM');
+      const res = await this.catalogApi.listCatalog(undefined, query.types);
+      console.debug('Response returned: ', res);
+      return res;
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
@@ -33,14 +38,21 @@ export class CatalogController {
 
   @Get(':slug')
   async retrieveCatalogObject(
-    @Param() { slug }: { slug: string },
-  ): Promise<RetrieveCatalogObjectResponse> {
-    console.log(slug);
+    @Param()
+    {
+      slug,
+    }: {
+      slug: string;
+    },
+  ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
+    console.log('Catalog request received!', slug);
     try {
-      return await this.catalogApi.retrieveCatalogObject(slug)
-      .then(res => res.result);
+      const res = await this.catalogApi.retrieveCatalogObject(slug, true);
+      console.debug('Response returned: ', res);
+      return res;
     } catch (error) {
       if (error instanceof ApiError) {
+        console.log('Error Response returned: ', error);
         return error.result;
       } else {
         console.log('Unexpected error occurred: ', error);
@@ -48,11 +60,12 @@ export class CatalogController {
     }
   }
 
-  @Get()
+  @Post()
   async getCatalogObjects(
     @Body()
     { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
   ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
+    console.log('Catalog request received!');
     try {
       return await this.catalogApi.batchRetrieveCatalogObjects({
         objectIds,

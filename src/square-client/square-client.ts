@@ -12,6 +12,7 @@ export class SquareClient {
         environment: process.env.NODE_ENV ? Environment.Production : Environment.Sandbox
       });
     }
+
   
     getClient = () => this.squareClient;
   }
