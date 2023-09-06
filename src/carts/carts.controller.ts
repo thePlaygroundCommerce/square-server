@@ -52,11 +52,16 @@ export class CartsController {
   @Put('update/:orderId')
   async updateCart(
     @Body()
-    { version, state, lineItems }: { version: number, state: string; lineItems: Array<OrderLineItem> },
+    {
+      order: { version, state, lineItems },
+      fieldsToClear,
+    }: {
+      order: { version: number; state: string; lineItems: OrderLineItem[] };
+      fieldsToClear: string[];
+    },
     @Param('orderId') orderId: string,
   ): Promise<ApiResponse<UpdateOrderResponse>> {
     console.log('Update Cart Request Received : ' + orderId);
-
     try {
       const result = await this.ordersApi.updateOrder(orderId, {
         order: {
@@ -65,6 +70,7 @@ export class CartsController {
           state,
           lineItems,
         },
+        fieldsToClear,
         idempotencyKey: uidv4(),
       });
       return result;

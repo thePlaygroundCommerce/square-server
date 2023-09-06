@@ -12,7 +12,6 @@ import {
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
 import { v4 as uidv4 } from 'uuid';
-// import SquareClient from 'src/main';
 
 @Controller('checkout')
 export class CheckoutController {
@@ -36,7 +35,8 @@ export class CheckoutController {
           idempotencyKey: uidv4(),
           order: { locationId: 'LFX4KWJMYHQZ3', lineItems: order.lineItems },
         })
-        .then((res) => res.result.paymentLink);
+        .then((res) => res.result.paymentLink)
+        .catch((err) => {console.log(err); return err});
 
       return await this.checkoutApi
         .updatePaymentLink(id, {

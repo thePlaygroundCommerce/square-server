@@ -7,6 +7,8 @@ import {
   BatchRetrieveCatalogObjectsRequest,
   CatalogApi,
   RetrieveCatalogObjectResponse,
+  SearchCatalogItemsResponse,
+  SearchCatalogItemsRequest,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
 
@@ -20,12 +22,29 @@ export class CatalogController {
     this.catalogApi = SquareClient.getClient().catalogApi;
   }
 
+  @Post('search')
+  async searchCatalogItems(@Body() body: SearchCatalogItemsRequest): Promise<ApiResponse<SearchCatalogItemsResponse>> {
+    console.log('Catalog request received!');
+    try {
+      const res = await this.catalogApi.searchCatalogItems(body);
+      console.debug('Response returned: ', res.statusCode);
+      console.log(res.result)
+      return res;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return error.result;
+      } else {
+        console.log('Unexpected error occurred: ', error);
+      }
+    }
+  }
+
   @Get('objects')
   async listCatalogObjects(@Query() query: any): Promise<ApiResponse<ListCatalogResponse>> {
     console.log('Catalog request received!');
     try {
       const res = await this.catalogApi.listCatalog(undefined, query.types);
-      console.debug('Response returned: ', res);
+      console.debug('Response returned: ', res.statusCode);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
