@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
 import {
   ApiResponse,
   ListCatalogResponse,
@@ -9,12 +9,15 @@ import {
   RetrieveCatalogObjectResponse,
   SearchCatalogItemsResponse,
   SearchCatalogItemsRequest,
+  SearchCatalogObjectsRequest,
+  SearchCatalogObjectsResponse,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
 
 @Controller('catalog')
 export class CatalogController {
   catalogApi: CatalogApi;
+  private readonly logger = new Logger(CatalogController.name);
 
   private static DEFAULT_CATALOG_ITEM_TYPES = "";
 
@@ -23,10 +26,11 @@ export class CatalogController {
   }
 
   @Post('search')
-  async searchCatalogItems(@Body() body: SearchCatalogItemsRequest): Promise<ApiResponse<SearchCatalogItemsResponse>> {
-    console.log('Catalog request received!');
+  async searchCatalogItems(@Body() body: SearchCatalogObjectsRequest): Promise<ApiResponse<SearchCatalogObjectsResponse>> {
+    console.log('Search Catalog request received!');
+    
     try {
-      const res = await this.catalogApi.searchCatalogItems(body);
+      const res = await this.catalogApi.searchCatalogObjects(body);
       console.debug('Response returned: ', res.statusCode);
       console.log(res.result)
       return res;
@@ -41,16 +45,18 @@ export class CatalogController {
 
   @Get('objects')
   async listCatalogObjects(@Query() query: any): Promise<ApiResponse<ListCatalogResponse>> {
-    console.log('Catalog request received!');
+    this.logger.log('Catalog request received!');
     try {
+      this.logger.debug(query);
       const res = await this.catalogApi.listCatalog(undefined, query.types);
-      console.debug('Response returned: ', res.statusCode);
+      this.logger.debug('Response returned: ', res.statusCode);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
+        this.logger.log(error);
         return error.result;
       } else {
-        console.log('Unexpected error occurred: ', error);
+        this.logger.log('Unexpected error occurred: ', error);
       }
     }
   }
@@ -85,6 +91,7 @@ export class CatalogController {
     { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
   ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
     console.log('Catalog request received!');
+    console.log({objectIds, includeRelatedObjects});
     try {
       return await this.catalogApi.batchRetrieveCatalogObjects({
         objectIds,
