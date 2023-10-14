@@ -33,7 +33,6 @@ export class CartsController {
   async createCart(
     @Body() { order: { state, lineItems } }: CreateOrderRequest,
   ): Promise<ApiResponse<CreateOrderResponse>> {
-    console.log('Create Cart Request Received : ');
 
     try {
       return await this.ordersApi.createOrder({
@@ -46,6 +45,7 @@ export class CartsController {
       });
     } catch (error) {
       console.log(error);
+      return error;
     }
   }
 
@@ -61,7 +61,6 @@ export class CartsController {
     },
     @Param('orderId') orderId: string,
   ): Promise<ApiResponse<UpdateOrderResponse>> {
-    console.log('Update Cart Request Received : ' + orderId);
     try {
       const result = await this.ordersApi.updateOrder(orderId, {
         order: {
@@ -76,6 +75,7 @@ export class CartsController {
       return result;
     } catch (error) {
       console.log(error);
+      return error;
     }
   }
 
@@ -84,10 +84,9 @@ export class CartsController {
     @Param('orderId') orderId,
   ): Promise<ApiResponse<RetrieveOrderResponse>> {
     try {
-      console.log('Get Cart Request Received : ' + orderId);
       return await this.ordersApi.retrieveOrder(orderId);
     } catch (error) {
-      return error;
+      return error.result;
     }
   }
 }

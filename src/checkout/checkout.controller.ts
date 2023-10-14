@@ -27,8 +27,6 @@ export class CheckoutController {
   async getCheckoutUrl(
     @Body() { order, checkoutOptions }: CreatePaymentLinkRequest,
   ): Promise<ApiResponse<UpdatePaymentLinkResponse>> {
-    console.log("Checkout Request Received")
-
     try {
       const { id, orderId, ...rest } = await this.checkoutApi
         .createPaymentLink({
@@ -56,7 +54,6 @@ export class CheckoutController {
   async getOrder(
     @Param() { orderId },
   ): Promise<ApiResponse<RetrieveOrderResponse>> {
-    console.log('Order Request Received' + orderId);
     try {
       return await this.ordersApi.retrieveOrder(orderId);
     } catch (error) {

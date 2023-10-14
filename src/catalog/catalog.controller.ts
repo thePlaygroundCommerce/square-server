@@ -27,8 +27,6 @@ export class CatalogController {
 
   @Post('search')
   async searchCatalogItems(@Body() body: SearchCatalogObjectsRequest): Promise<ApiResponse<SearchCatalogObjectsResponse>> {
-    console.log('Search Catalog request received!');
-    
     try {
       const res = await this.catalogApi.searchCatalogObjects(body);
       console.debug('Response returned: ', res.statusCode);
@@ -45,7 +43,6 @@ export class CatalogController {
 
   @Get('objects')
   async listCatalogObjects(@Query() query: any): Promise<ApiResponse<ListCatalogResponse>> {
-    this.logger.log('Catalog request received!');
     try {
       this.logger.debug(query);
       const res = await this.catalogApi.listCatalog(undefined, query.types);
@@ -70,7 +67,6 @@ export class CatalogController {
       slug: string;
     },
   ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
-    console.log('Catalog request received!', slug);
     try {
       const res = await this.catalogApi.retrieveCatalogObject(slug, true);
       console.debug('Response returned: ', res);
@@ -90,8 +86,6 @@ export class CatalogController {
     @Body()
     { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
   ): Promise<ApiResponse<BatchRetrieveCatalogObjectsResponse>> {
-    console.log('Catalog request received!');
-    console.log({objectIds, includeRelatedObjects});
     try {
       return await this.catalogApi.batchRetrieveCatalogObjects({
         objectIds,

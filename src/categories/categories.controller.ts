@@ -20,7 +20,6 @@ export class CategoriesController {
 
   @Get('objects')
   async getCategoryObjects(): Promise<ApiResponse<ListCatalogResponse>> {
-    console.log('Request received!');
     try {
       const res = await this.catalogApi.listCatalog(undefined, 'IMAGE,ITEM');
       console.debug('Response returned: ', res);

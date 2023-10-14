@@ -12,11 +12,14 @@ export class CustomerController {
 
   @Get(':customerId')
   async getCustomer(
-    @Param('customerId') { customerId }: { customerId: string },
+    @Param('customerId') customerId: string,
   ) {
     try {
-      return this.customersApi.retrieveCustomer(customerId);
-    } catch (error) {}
+      return await this.customersApi.retrieveCustomer(customerId);
+    } catch (error) {
+      console.log(error)
+      return error.result;
+    }
   }
 
   @Delete(['delete', ':customerId'])
@@ -24,8 +27,11 @@ export class CustomerController {
     @Param('customerId') { customerId }: { customerId: string },
   ) {
     try {
-      return this.customersApi.deleteCustomer(customerId);
-    } catch (error) {}
+      return await this.customersApi.deleteCustomer(customerId);
+    } catch (error) {
+      console.log(error)
+      return error.result;
+    }
   }
 
   @Put(['update', ':customerId'])
@@ -34,14 +40,20 @@ export class CustomerController {
     @Param('customerId') { customerId }: { customerId: string },
   ) {
     try {
-      return this.customersApi.updateCustomer(customerId, updatedCustomer);
-    } catch (error) {}
+      return await this.customersApi.updateCustomer(customerId, updatedCustomer);
+    } catch (error) {
+      console.log(error)
+      return error.result;
+    }
   }
 
   @Post('create')
   async createCustomer(@Body() newCustomer: CreateCustomerRequest) {
     try {
-      return this.customersApi.createCustomer(newCustomer);
-    } catch (error) {}
+      return await this.customersApi.createCustomer(newCustomer);
+    } catch (error) {
+      console.log(error)
+      return error.result;
+    }
   }
 }

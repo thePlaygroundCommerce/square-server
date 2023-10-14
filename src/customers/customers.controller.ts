@@ -28,7 +28,6 @@ import { SquareClient } from 'src/square-client/square-client';
 export class CustomersController {
   customersApi: CustomersApi;
   private readonly logger = new Logger(CustomersController.name);
-
   private static DEFAULT_CATALOG_ITEM_TYPES = '';
 
   constructor(SquareClient: SquareClient) {
@@ -39,7 +38,6 @@ export class CustomersController {
   async searchCustomers(
     @Body() body: SearchCustomersRequest,
   ): Promise<ApiResponse<SearchCustomersResponse>> {
-    console.log('Search Customer request received!');
 
     try {
       const res = await this.customersApi.searchCustomers(body);
@@ -58,28 +56,27 @@ export class CustomersController {
   async createCustomers(
     @Body() body: CreateCustomerRequest,
   ): Promise<ApiResponse<CreateCustomerResponse>> {
-    console.log('Create Customer request received!');
 
     const queryByEmail = {
-        filter: {
-            emailAddress: {
-                exact: body.emailAddress
-            }
-        }
-    }
+      filter: {
+        emailAddress: {
+          exact: body.emailAddress,
+        },
+      },
+    };
 
     try {
       const searchRes = await this.searchCustomers({
-        query: queryByEmail
+        query: queryByEmail,
       });
-      console.log(searchRes)
+      console.log(searchRes);
 
-      if(searchRes.result.customers?.length > 0){
-        return
+      if (searchRes.result.customers?.length > 0) {
+        return;
         // TODO document why this block is empty
       }
 
-      console.log(body)
+      console.log(body);
 
       const res = await this.customersApi.createCustomer(body);
       console.debug('Response returned: ', res.statusCode);
