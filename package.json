@@ -30,7 +30,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.5",
     "square": "^30.0.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

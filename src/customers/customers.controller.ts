@@ -42,7 +42,6 @@ export class CustomersController {
     try {
       const res = await this.customersApi.searchCustomers(body);
       console.debug('Response returned: ', res.statusCode);
-      console.log(res.result);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
@@ -69,18 +68,15 @@ export class CustomersController {
       const searchRes = await this.searchCustomers({
         query: queryByEmail,
       });
-      console.log(searchRes);
 
       if (searchRes.result.customers?.length > 0) {
         return;
         // TODO document why this block is empty
       }
 
-      console.log(body);
 
       const res = await this.customersApi.createCustomer(body);
       console.debug('Response returned: ', res.statusCode);
-      console.log(res.result);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {

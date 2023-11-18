@@ -33,7 +33,6 @@ export class CartsController {
   async createCart(
     @Body() { order: { state, lineItems } }: CreateOrderRequest,
   ): Promise<ApiResponse<CreateOrderResponse>> {
-
     try {
       return await this.ordersApi.createOrder({
         order: {

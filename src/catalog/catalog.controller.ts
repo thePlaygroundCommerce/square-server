@@ -30,7 +30,6 @@ export class CatalogController {
     try {
       const res = await this.catalogApi.searchCatalogObjects(body);
       console.debug('Response returned: ', res.statusCode);
-      console.log(res.result)
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
