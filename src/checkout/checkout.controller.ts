@@ -31,7 +31,7 @@ export class CheckoutController {
       const { id, orderId, ...rest } = await this.checkoutApi
         .createPaymentLink({
           idempotencyKey: uidv4(),
-          order: { locationId: 'LFX4KWJMYHQZ3', lineItems: order.lineItems },
+          order: { locationId: process.env.SQUARE_MAIN_LOCATION_ID, lineItems: order.lineItems },
         })
         .then((res) => res.result.paymentLink)
         .catch((err) => {console.log(err); return err});
