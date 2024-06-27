@@ -60,10 +60,12 @@ export class CartsController {
     },
     @Param('orderId') orderId: string,
   ): Promise<ApiResponse<UpdateOrderResponse>> {
+    console.log(process.env.SQUARE_MAIN_LOCATION_ID)
+     return null;
     try {
       const result = await this.ordersApi.updateOrder(orderId, {
         order: {
-          locationId: 'LFX4KWJMYHQZ3',
+          locationId: process.env.SQUARE_MAIN_LOCATION_ID,
           version,
           state,
           lineItems,
