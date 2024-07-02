@@ -38,7 +38,6 @@ export class CustomersController {
   async searchCustomers(
     @Body() body: SearchCustomersRequest,
   ): Promise<ApiResponse<SearchCustomersResponse>> {
-
     try {
       const res = await this.customersApi.searchCustomers(body);
       console.debug('Response returned: ', res.statusCode);
@@ -55,7 +54,6 @@ export class CustomersController {
   async createCustomers(
     @Body() body: CreateCustomerRequest,
   ): Promise<ApiResponse<CreateCustomerResponse>> {
-
     const queryByEmail = {
       filter: {
         emailAddress: {
@@ -73,7 +71,6 @@ export class CustomersController {
         return;
         // TODO document why this block is empty
       }
-
 
       const res = await this.customersApi.createCustomer(body);
       console.debug('Response returned: ', res.statusCode);

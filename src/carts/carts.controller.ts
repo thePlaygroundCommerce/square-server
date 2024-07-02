@@ -5,8 +5,9 @@ import {
   Param,
   Post,
   Put,
-  Query,
-  Req,
+  Logger,
+  Injectable,
+  UseFilters,
 } from '@nestjs/common';
 import { v4 as uidv4 } from 'uuid';
 import {
@@ -16,76 +17,44 @@ import {
   OrderLineItem,
   OrdersApi,
   RetrieveOrderResponse,
-  UpdateOrderRequest,
   UpdateOrderResponse,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
+import {
+  ApiErrorFilter,
+  OrderApiService,
+} from 'src/order-api/order-api.service';
 
+@Injectable()
 @Controller('carts')
+@UseFilters(ApiErrorFilter)
 export class CartsController {
-  ordersApi: OrdersApi;
-
-  constructor(SquareClient: SquareClient) {
-    this.ordersApi = SquareClient.getClient().ordersApi;
-  }
+  private logger = new Logger();
+  constructor(private orderService: OrderApiService) {}
 
   @Post('create')
   async createCart(
-    @Body() { order: { state, lineItems } }: CreateOrderRequest,
+    @Body() req: CreateOrderRequest,
   ): Promise<ApiResponse<CreateOrderResponse>> {
-    try {
-      return await this.ordersApi.createOrder({
-        order: {
-          locationId: process.env.SQUARE_MAIN_LOCATION_ID,
-          state,
-          lineItems,
-        },
-        idempotencyKey: uidv4(),
-      });
-    } catch (error) {
-      console.log(error);
-      return error;
-    }
+    return await this.orderService.createOrder(req);
   }
 
   @Put('update/:orderId')
   async updateCart(
     @Body()
-    {
-      order: { version, state, lineItems },
-      fieldsToClear,
-    }: {
+    req: {
       order: { version: number; state: string; lineItems: OrderLineItem[] };
       fieldsToClear: string[];
     },
     @Param('orderId') orderId: string,
   ): Promise<ApiResponse<UpdateOrderResponse>> {
-    try {
-      const result = await this.ordersApi.updateOrder(orderId, {
-        order: {
-          locationId: process.env.SQUARE_MAIN_LOCATION_ID,
-          version,
-          state,
-          lineItems,
-        },
-        fieldsToClear,
-        idempotencyKey: uidv4(),
-      });
-      return result;
-    } catch (error) {
-      console.log(error);
-      return error;
-    }
+    return await this.orderService.updateOrder(orderId, req);
   }
 
   @Get(':orderId')
   async getCart(
     @Param('orderId') orderId,
   ): Promise<ApiResponse<RetrieveOrderResponse>> {
-    try {
-      return await this.ordersApi.retrieveOrder(orderId);
-    } catch (error) {
-      return error.result;
-    }
+    return await this.orderService.getOrder(orderId);
   }
 }

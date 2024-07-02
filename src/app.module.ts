@@ -24,6 +24,6 @@ import { CustomersController } from './customers/customers.controller';
     CategoriesController,
     CustomersController,
   ],
-  providers: [ SquareClient, CatalogApiService, OrderApiService]
+  providers: [SquareClient, CatalogApiService, OrderApiService],
 })
 export class AppModule {}

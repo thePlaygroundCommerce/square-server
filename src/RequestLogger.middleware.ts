@@ -1,8 +1,16 @@
 import { Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
-export function RequestLogger(req: Request, res: Response, next: NextFunction) {
+export function RequestLogger(
+  { method, url }: Request,
+  res: Response,
+  next: NextFunction,
+) {
   const logger = new Logger();
-  logger.log(`${req.method} Request To ${req.url} Received`);
+  logger.log(`${method} Request To ${url} Received`);
+
+  res.on('close', () => {
+    logger.log(`${method} ${url} ${res.statusCode} ${res.statusMessage}`);
+  });
   next();
-};
+}

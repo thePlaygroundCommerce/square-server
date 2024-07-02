@@ -31,20 +31,26 @@ export class CheckoutController {
       const { id, orderId, ...rest } = await this.checkoutApi
         .createPaymentLink({
           idempotencyKey: uidv4(),
-          order: { locationId: process.env.SQUARE_MAIN_LOCATION_ID, lineItems: order.lineItems },
-        })
-        .then((res) => res.result.paymentLink)
-        .catch((err) => {console.log(err); return err});
-
-      return await this.checkoutApi
-        .updatePaymentLink(id, {
-          paymentLink: {
-            ...rest,
-            checkoutOptions: {
-              redirectUrl: checkoutOptions && checkoutOptions.redirectUrl + orderId,
-            },
+          order: {
+            locationId: process.env.SQUARE_MAIN_LOCATION_ID,
+            lineItems: order.lineItems,
           },
         })
+        .then((res) => res.result.paymentLink)
+        .catch((err) => {
+          console.log(err);
+          return err;
+        });
+
+      return await this.checkoutApi.updatePaymentLink(id, {
+        paymentLink: {
+          ...rest,
+          checkoutOptions: {
+            redirectUrl:
+              checkoutOptions && checkoutOptions.redirectUrl + orderId,
+          },
+        },
+      });
     } catch (error) {
       console.log(error);
     }

@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { CreateCustomerRequest, CustomersApi, UpdateCustomerRequest } from 'square';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import {
+  CreateCustomerRequest,
+  CustomersApi,
+  UpdateCustomerRequest,
+} from 'square';
 import { SquareClient } from 'src/square-client/square-client';
 
 @Controller('customer')
@@ -11,13 +23,11 @@ export class CustomerController {
   }
 
   @Get(':customerId')
-  async getCustomer(
-    @Param('customerId') customerId: string,
-  ) {
+  async getCustomer(@Param('customerId') customerId: string) {
     try {
       return await this.customersApi.retrieveCustomer(customerId);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return error.result;
     }
   }
@@ -29,7 +39,7 @@ export class CustomerController {
     try {
       return await this.customersApi.deleteCustomer(customerId);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return error.result;
     }
   }
@@ -40,9 +50,12 @@ export class CustomerController {
     @Param('customerId') { customerId }: { customerId: string },
   ) {
     try {
-      return await this.customersApi.updateCustomer(customerId, updatedCustomer);
+      return await this.customersApi.updateCustomer(
+        customerId,
+        updatedCustomer,
+      );
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return error.result;
     }
   }
@@ -52,7 +65,7 @@ export class CustomerController {
     try {
       return await this.customersApi.createCustomer(newCustomer);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return error.result;
     }
   }
