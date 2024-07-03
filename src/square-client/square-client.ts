@@ -11,9 +11,10 @@ export class SquareClient {
       accessToken:
         process.env.SQUARE_ACCESS_TOKEN ||
         configService.get<string>('SQUARE_ACCESS_TOKEN'),
-      environment: process.env.NODE_ENV
-        ? Environment.Production
-        : Environment.Sandbox,
+      environment:
+        process.env.NODE_ENV === 'production'
+          ? Environment.Production
+          : Environment.Sandbox,
     });
   }
 
