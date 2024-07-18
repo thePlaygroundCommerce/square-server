@@ -14,6 +14,7 @@ import {
   ApiResponse,
   CreateOrderRequest,
   CreateOrderResponse,
+  Order,
   OrderLineItem,
   OrdersApi,
   RetrieveOrderResponse,
@@ -29,7 +30,6 @@ import {
 @Controller('carts')
 @UseFilters(ApiErrorFilter)
 export class CartsController {
-  private logger = new Logger();
   constructor(private orderService: OrderApiService) {}
 
   @Post('create')
@@ -43,7 +43,7 @@ export class CartsController {
   async updateCart(
     @Body()
     req: {
-      order: { version: number; state: string; lineItems: OrderLineItem[] };
+      order: Order;
       fieldsToClear: string[];
     },
     @Param('orderId') orderId: string,

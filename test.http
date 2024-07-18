@@ -1,3 +1,6 @@
+GET http://localhost:3000/checkout/order/12312/2342342?bam=wham&wham=Limp HTTP/1.1
+
+###
 GET http://localhost:3000/catalog HTTP/1.1
 
 

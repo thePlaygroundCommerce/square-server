@@ -50,7 +50,6 @@ export class CatalogController {
     @Query() query: any,
   ): Promise<ApiResponse<ListCatalogResponse>> {
     try {
-      console.log('hellp');
       const res = await this.catalogApi.listCatalog(undefined, query.types);
       this.logger.debug('Response returned: ', res.statusCode);
       return res;
