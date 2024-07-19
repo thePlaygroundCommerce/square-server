@@ -11,12 +11,9 @@ import {
   ApiResponse,
   ListCatalogResponse,
   ApiError,
-  BatchRetrieveCatalogObjectsResponse,
   BatchRetrieveCatalogObjectsRequest,
   CatalogApi,
   RetrieveCatalogObjectResponse,
-  SearchCatalogItemsResponse,
-  SearchCatalogItemsRequest,
   SearchCatalogObjectsRequest,
   SearchCatalogObjectsResponse,
 } from 'square';
@@ -26,8 +23,6 @@ import { SquareClient } from 'src/square-client/square-client';
 export class CatalogController {
   catalogApi: CatalogApi;
   private readonly logger = new Logger(CatalogController.name);
-
-  private static DEFAULT_CATALOG_ITEM_TYPES = '';
 
   constructor(SquareClient: SquareClient) {
     this.catalogApi = SquareClient.getClient().catalogApi;
@@ -55,7 +50,6 @@ export class CatalogController {
     @Query() query: any,
   ): Promise<ApiResponse<ListCatalogResponse>> {
     try {
-      this.logger.debug(query);
       const res = await this.catalogApi.listCatalog(undefined, query.types);
       this.logger.debug('Response returned: ', res.statusCode);
       return res;

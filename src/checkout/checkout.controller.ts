@@ -1,69 +1,75 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseFilters,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 import {
   ApiResponse,
-  CheckoutApi,
-  CreateCheckoutRequest,
-  CreateCheckoutResponse,
-  CreatePaymentLinkRequest,
-  OrdersApi,
-  RetrieveOrderResponse,
-  UpdatePaymentLinkRequest,
+  CheckoutOptions,
+  CreatePaymentLinkResponse,
+  OrderLineItem,
   UpdatePaymentLinkResponse,
 } from 'square';
-import { SquareClient } from 'src/square-client/square-client';
-import { v4 as uidv4 } from 'uuid';
+import { ApiErrorFilter } from 'src/order-api/order-api.service';
+import { CheckoutService } from './checkout.service';
 
 @Controller('checkout')
 export class CheckoutController {
-  checkoutApi: CheckoutApi;
-  ordersApi: OrdersApi;
+  constructor(private checkoutService: CheckoutService) {}
 
-  constructor(SquareClient: SquareClient) {
-    this.checkoutApi = SquareClient.getClient().checkoutApi;
-    this.ordersApi = SquareClient.getClient().ordersApi;
-  }
-
-  @Post()
-  async getCheckoutUrl(
-    @Body() { order, checkoutOptions }: CreatePaymentLinkRequest,
+  @Post('item')
+  @UseFilters(ApiErrorFilter)
+  async getCheckoutItemUrl(
+    @Body() lineItems: any,
+    @Query() { redirect }: any,
   ): Promise<ApiResponse<UpdatePaymentLinkResponse>> {
-    try {
-      const { id, orderId, ...rest } = await this.checkoutApi
-        .createPaymentLink({
-          idempotencyKey: uidv4(),
-          order: {
-            locationId: process.env.SQUARE_MAIN_LOCATION_ID,
-            lineItems: order.lineItems,
-          },
-        })
-        .then((res) => res.result.paymentLink)
-        .catch((err) => {
-          console.log(err);
-          return err;
-        });
-
-      return await this.checkoutApi.updatePaymentLink(id, {
-        paymentLink: {
-          ...rest,
-          checkoutOptions: {
-            redirectUrl:
-              checkoutOptions && checkoutOptions.redirectUrl + orderId,
-          },
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    const checkoutOptions: CheckoutOptions = {
+      redirectUrl: redirect,
+    };
+    return this.checkoutService.processItemCheckout({
+      order: {
+        locationId: process.env.SQUARE_MAIN_LOCATION_ID,
+        lineItems: lineItems,
+      },
+      checkoutOptions,
+    });
   }
 
-  @Get(['order/:orderId'])
-  async getOrder(
-    @Param() { orderId },
-  ): Promise<ApiResponse<RetrieveOrderResponse>> {
-    try {
-      return await this.ordersApi.retrieveOrder(orderId);
-    } catch (error) {
-      console.log(error);
-    }
+  @Get('order/:id')
+  @UseFilters(ApiErrorFilter)
+  async getCheckoutOrderUrl(
+    @Req() req: Request,
+    @Param() { id }: { id: string },
+    @Query() { redirect }: any,
+  ): Promise<ApiResponse<CreatePaymentLinkResponse>> {
+    const redirectUrl = new URL(
+      `${req.protocol}://${req.get(
+        'Host',
+      )}/checkout/process?cartId=${id}&redirect=${redirect}`,
+    );
+
+    const checkoutOptions: CheckoutOptions = {
+      redirectUrl: redirectUrl.toString(),
+    };
+
+    return this.checkoutService.processOrderCheckout(id, checkoutOptions);
+  }
+
+  @Get('process/:id')
+  @UseFilters(ApiErrorFilter)
+  async postSuccessfulCheckout(
+    @Res() res: Response,
+    @Query() { redirect, cartId }: any,
+  ): Promise<void> {
+    await this.checkoutService.processSuccessfulCheckout(cartId);
+
+    res.redirect(redirect);
   }
 }

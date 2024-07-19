@@ -14,6 +14,7 @@ import {
   ApiResponse,
   CreateOrderRequest,
   CreateOrderResponse,
+  Order,
   OrderLineItem,
   OrdersApi,
   RetrieveOrderResponse,
@@ -62,7 +63,7 @@ export class OrderApiService {
       order: { version, state, lineItems },
       fieldsToClear,
     }: {
-      order: { version: number; state: string; lineItems: OrderLineItem[] };
+      order: Order;
       fieldsToClear: string[];
     },
   ): Promise<ApiResponse<UpdateOrderResponse>> {
