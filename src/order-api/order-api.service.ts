@@ -12,6 +12,8 @@ import { v4 as uidv4 } from 'uuid';
 import {
   ApiError,
   ApiResponse,
+  CalculateOrderRequest,
+  CalculateOrderResponse,
   CreateOrderRequest,
   CreateOrderResponse,
   Order,
@@ -44,6 +46,9 @@ export class OrderApiService {
   async getOrder(orderId: string): Promise<ApiResponse<RetrieveOrderResponse>> {
     return await this.ordersApi.retrieveOrder(orderId);
   }
+  async calculatetOrder(req: CalculateOrderRequest): Promise<ApiResponse<CalculateOrderResponse>> {
+    return await this.ordersApi.calculateOrder(req);
+  }
   async createOrder({
     order: { state, lineItems },
   }: CreateOrderRequest): Promise<ApiResponse<CreateOrderResponse>> {
@@ -52,6 +57,10 @@ export class OrderApiService {
         locationId: process.env.SQUARE_MAIN_LOCATION_ID,
         state,
         lineItems,
+        pricingOptions: {
+          autoApplyDiscounts: true,
+          autoApplyTaxes: true,
+        }
       },
       idempotencyKey: uidv4(),
     });
@@ -60,7 +69,7 @@ export class OrderApiService {
   async updateOrder(
     orderId: string,
     {
-      order: { version, state, lineItems },
+      order: { version, state, lineItems, ...rest },
       fieldsToClear,
     }: {
       order: Order;
@@ -73,6 +82,7 @@ export class OrderApiService {
         version,
         state,
         lineItems,
+        ...rest
       },
       fieldsToClear,
       idempotencyKey: uidv4(),

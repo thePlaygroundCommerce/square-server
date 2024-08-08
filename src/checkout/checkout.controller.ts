@@ -15,14 +15,37 @@ import {
   CheckoutOptions,
   CreatePaymentLinkResponse,
   OrderLineItem,
+  OrderPricingOptions,
   UpdatePaymentLinkResponse,
 } from 'square';
-import { ApiErrorFilter } from 'src/order-api/order-api.service';
+import {
+  ApiErrorFilter,
+  OrderApiService,
+} from 'src/order-api/order-api.service';
 import { CheckoutService } from './checkout.service';
+
+export const SERVICE_CHARGES = [
+  {
+    name: 'FREE SHIPPING',
+    amountMoney: {
+      amount: BigInt(0),
+      currency: 'USD',
+    },
+    calculationPhase: 'TOTAL_PHASE',
+  },
+];
+
+export const PRICING_OPTIONS: OrderPricingOptions = {
+  autoApplyDiscounts: true,
+  autoApplyTaxes: true,
+};
 
 @Controller('checkout')
 export class CheckoutController {
-  constructor(private checkoutService: CheckoutService) {}
+  constructor(
+    private checkoutService: CheckoutService,
+    private orderService: OrderApiService,
+  ) {}
 
   @Post('item')
   @UseFilters(ApiErrorFilter)
@@ -31,12 +54,15 @@ export class CheckoutController {
     @Query() { redirect }: any,
   ): Promise<ApiResponse<UpdatePaymentLinkResponse>> {
     const checkoutOptions: CheckoutOptions = {
+      askForShippingAddress: true,
       redirectUrl: redirect,
     };
     return this.checkoutService.processItemCheckout({
       order: {
         locationId: process.env.SQUARE_MAIN_LOCATION_ID,
         lineItems: lineItems,
+        serviceCharges: SERVICE_CHARGES,
+        pricingOptions: PRICING_OPTIONS,
       },
       checkoutOptions,
     });
@@ -56,6 +82,7 @@ export class CheckoutController {
     );
 
     const checkoutOptions: CheckoutOptions = {
+      askForShippingAddress: true,
       redirectUrl: redirectUrl.toString(),
     };
 

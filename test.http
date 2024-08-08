@@ -12,3 +12,144 @@ Content-Type: application/json
     "objectIds": ["7RUDIRY47XIZ4Z7GYOMNJLIB"],
     "includeRelatedObjects": true
 }
+
+###
+POST https://connect.squareupsandbox.com/v2/orders/calculate HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer EAAAEKYKheBby4tHIRfmFU-2ZleCsfLpaq6peNCto0KOKD33xdntKaY1ddwRBBAP
+
+{
+  "order": {
+    "id": "PfkDEQT4pDCDiZTOl48CFtoo6a4F",
+    "location_id": "LFX4KWJMYHQZ3",
+    "line_items": [
+      {
+        "uid": "roKXOy5UefCloHjJp6LjRC",
+        "catalog_object_id": "DCEJYWJ3LGMM6NPTLPHMD43Y",
+        "catalog_version": 1723099066789,
+        "quantity": "1",
+        "name": "Crooney Grapevine Tee",
+        "variation_name": "Small",
+        "base_price_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "gross_sales_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "total_tax_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_discount_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "variation_total_price_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "item_type": "ITEM",
+        "total_service_charge_money": {
+          "amount": 0,
+          "currency": "USD"
+        }
+      },
+      {
+        "uid": "roKXOy5UefCloHjJp6LjRC",
+        "catalog_object_id": "DCEJYWJ3LGMM6NPTLPHMD43Y",
+        "catalog_version": 1723099066789,
+        "quantity": "1",
+        "name": "Crooney Grapevine Tee",
+        "variation_name": "Small",
+        "base_price_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "gross_sales_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "total_tax_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_discount_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "variation_total_price_money": {
+          "amount": 3000,
+          "currency": "USD"
+        },
+        "item_type": "ITEM",
+        "total_service_charge_money": {
+          "amount": 0,
+          "currency": "USD"
+        }
+      }
+    ],
+    "created_at": "2024-08-08T06:42:19.581Z",
+    "updated_at": "2024-08-08T06:42:19.581Z",
+    "state": "DRAFT",
+    "version": 1,
+    "total_tax_money": {
+      "amount": 0,
+      "currency": "USD"
+    },
+    "total_discount_money": {
+      "amount": 0,
+      "currency": "USD"
+    },
+    "total_tip_money": {
+      "amount": 0,
+      "currency": "USD"
+    },
+    "total_money": {
+      "amount": 3000,
+      "currency": "USD"
+    },
+    "total_service_charge_money": {
+      "amount": 0,
+      "currency": "USD"
+    },
+    "net_amounts": {
+      "total_money": {
+        "amount": 3000,
+        "currency": "USD"
+      },
+      "tax_money": {
+        "amount": 0,
+        "currency": "USD"
+      },
+      "discount_money": {
+        "amount": 0,
+        "currency": "USD"
+      },
+      "tip_money": {
+        "amount": 0,
+        "currency": "USD"
+      },
+      "service_charge_money": {
+        "amount": 0,
+        "currency": "USD"
+      }
+    },
+    "source": {
+      "name": "Sandbox for sq0idp-pb02e8UVJuCvgMankWy_yg"
+    },
+    "net_amount_due_money": {
+      "amount": 3000,
+      "currency": "USD"
+    }
+  }
+}
