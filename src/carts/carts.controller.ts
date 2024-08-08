@@ -12,6 +12,7 @@ import {
 import { v4 as uidv4 } from 'uuid';
 import {
   ApiResponse,
+  CalculateOrderRequest,
   CreateOrderRequest,
   CreateOrderResponse,
   Order,
@@ -37,6 +38,14 @@ export class CartsController {
     @Body() req: CreateOrderRequest,
   ): Promise<ApiResponse<CreateOrderResponse>> {
     return await this.orderService.createOrder(req);
+  }
+
+  @Post('calculate')
+  async calculateCart(
+    @Body()
+    req: CalculateOrderRequest,
+  ): Promise<ApiResponse<UpdateOrderResponse>> {
+    return await this.orderService.calculatetOrder(req);
   }
 
   @Put('update/:orderId')

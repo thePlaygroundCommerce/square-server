@@ -8,6 +8,7 @@ import {
 import { v4 as uidv4 } from 'uuid';
 import { OrderApiService } from 'src/order-api/order-api.service';
 import { SquareClient } from 'src/square-client/square-client';
+import { PRICING_OPTIONS, SERVICE_CHARGES } from './checkout.controller';
 
 @Injectable()
 export class CheckoutService {
@@ -25,8 +26,9 @@ export class CheckoutService {
     const {
       result: { order },
     } = await this.orderService.getOrder(id);
-    if (!order) {
-    } //somethings wrong
+
+    const shippingCharges = order.serviceCharges?.filter((charge) => charge.name === 'shipping') ?? []
+    if(shippingCharges.length === 0) order.serviceCharges = shippingCharges.concat(order.serviceCharges, SERVICE_CHARGES).filter(charge => charge)
 
     const {
       result: {
@@ -40,6 +42,8 @@ export class CheckoutService {
           catalogObjectId,
           quantity,
         })),
+        serviceCharges: order.serviceCharges, 
+        pricingOptions: PRICING_OPTIONS
       },
       checkoutOptions: options,
     });
@@ -87,12 +91,12 @@ export class CheckoutService {
     });
   }
 
+
+  // TODO: Do we reaally want to delete line items? Or should we change state of order to signal client to use new cart id?
   async processSuccessfulCheckout(id: string) {
     const {
       result: { order },
     } = await this.orderService.getOrder(id);
-    if (!order) {
-    } //somethings wrong
 
     return await this.orderService.updateOrder(id, {
       order: {
