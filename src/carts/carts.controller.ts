@@ -27,7 +27,6 @@ import {
   OrderApiService,
 } from 'src/order-api/order-api.service';
 
-@Injectable()
 @Controller('carts')
 @UseFilters(ApiErrorFilter)
 export class CartsController {

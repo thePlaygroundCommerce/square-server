@@ -3,6 +3,7 @@ import {
   CheckoutApi,
   CheckoutOptions,
   CreatePaymentLinkRequest,
+  CustomersApi,
   OrdersApi,
 } from 'square';
 import { v4 as uidv4 } from 'uuid';
@@ -14,12 +15,14 @@ import { PRICING_OPTIONS, SERVICE_CHARGES } from './checkout.controller';
 export class CheckoutService {
   private readonly logger = new Logger(CheckoutService.name);
   private checkoutApi: CheckoutApi;
+  private customerApi: CustomersApi;
 
   constructor(
     SquareClient: SquareClient,
     private orderService: OrderApiService,
   ) {
     this.checkoutApi = SquareClient.getClient().checkoutApi;
+    this.customerApi = SquareClient.getClient().customersApi;
   }
 
   async processOrderCheckout(id: string, options: CheckoutOptions) {
@@ -27,8 +30,13 @@ export class CheckoutService {
       result: { order },
     } = await this.orderService.getOrder(id);
 
-    const shippingCharges = order.serviceCharges?.filter((charge) => charge.name === 'shipping') ?? []
-    if(shippingCharges.length === 0) order.serviceCharges = shippingCharges.concat(order.serviceCharges, SERVICE_CHARGES).filter(charge => charge)
+    const shippingCharges =
+      order.serviceCharges?.filter((charge) => charge.name === 'shipping') ??
+      [];
+    if (shippingCharges.length === 0)
+      order.serviceCharges = shippingCharges
+        .concat(order.serviceCharges, SERVICE_CHARGES)
+        .filter((charge) => charge);
 
     const {
       result: {
@@ -42,8 +50,8 @@ export class CheckoutService {
           catalogObjectId,
           quantity,
         })),
-        serviceCharges: order.serviceCharges, 
-        pricingOptions: PRICING_OPTIONS
+        serviceCharges: order.serviceCharges,
+        pricingOptions: PRICING_OPTIONS,
       },
       checkoutOptions: options,
     });
@@ -90,7 +98,6 @@ export class CheckoutService {
       },
     });
   }
-
 
   // TODO: Do we reaally want to delete line items? Or should we change state of order to signal client to use new cart id?
   async processSuccessfulCheckout(id: string) {
