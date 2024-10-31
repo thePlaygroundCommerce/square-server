@@ -16,6 +16,9 @@ import {
   RetrieveCatalogObjectResponse,
   SearchCatalogObjectsRequest,
   SearchCatalogObjectsResponse,
+  SearchCatalogItemsRequest,
+  SearchCatalogItemsResponse,
+  BatchRetrieveCatalogObjectsResponse,
 } from 'square';
 import { SquareClient } from 'src/square-client/square-client';
 
@@ -30,6 +33,23 @@ export class CatalogController {
 
   @Post('search')
   async searchCatalogItems(
+    @Body() body: SearchCatalogItemsRequest,
+  ): Promise<ApiResponse<SearchCatalogItemsResponse>> {
+    try {
+      const res = await this.catalogApi.searchCatalogItems(body);
+      console.debug('Response returned: ', res.statusCode);
+      return res;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return error.result;
+      } else {
+        console.log('Unexpected error occurred: ', error);
+      }
+    }
+  }
+
+  @Post('search/objects')
+  async searchCatalogObjects(
     @Body() body: SearchCatalogObjectsRequest,
   ): Promise<ApiResponse<SearchCatalogObjectsResponse>> {
     try {
@@ -63,6 +83,21 @@ export class CatalogController {
     }
   }
 
+  @Get('info')
+  async getCatalogInformation() {
+    const catalogList = (
+      await this.catalogApi.listCatalog(undefined, 'CATEGORY,TAX,DISCOUNT')
+    ).result.objects;
+
+    return catalogList.reduce(
+      (acc, obj) => ({
+        ...acc,
+        [obj.type]: acc[obj.type] ? [...acc[obj.type], obj] : [obj],
+      }),
+      {},
+    );
+  }
+
   @Get(':slug')
   async retrieveCatalogObject(
     @Param()
@@ -70,7 +105,7 @@ export class CatalogController {
   ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
     try {
       const res = await this.catalogApi.retrieveCatalogObject(slug, true);
-      console.debug('Response returned: ', res);
+      console.debug('Response returned: ', res.statusCode);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
@@ -83,62 +118,30 @@ export class CatalogController {
   }
 
   @Post()
-  async getCatalogObjects(
+  async getProducts(
     @Body()
     { objectIds, includeRelatedObjects }: BatchRetrieveCatalogObjectsRequest,
-  ): Promise<any> {
+  ): Promise<BatchRetrieveCatalogObjectsResponse> {
+    const result = {};
+    let catalogImages = [];
     try {
-      const batchRes = await this.catalogApi.batchRetrieveCatalogObjects({
-        objectIds,
-        includeRelatedObjects,
-      });
+      return (
+        await this.catalogApi.batchRetrieveCatalogObjects({
+          objectIds,
+          includeRelatedObjects,
+        })
+      ).result;
 
-      const result = batchRes.result;
+      // const result = [...objects, ...relatedObjects].reduce(
+      //   (acc, obj) => ({
+      //     ...acc,
+      //     [obj.type]: acc[obj.type] ? [...acc[obj.type], obj] : [obj],
+      //   }),
+      //   {},
+      // );
+      // return result;
 
-      if (
-        result.relatedObjects.filter((item) => item.type === 'IMAGE').length > 0
-      )
-        return batchRes;
-      else {
-        const catalogLinkMap = result.relatedObjects
-          .filter((item) => item.type === 'ITEM')
-          .reduce(
-            (acc, item) => ({
-              ...acc,
-              [item.id]: [
-                objectIds.filter((id) =>
-                  item.itemData.variations.map(({ id }) => id).includes(id),
-                ),
-                item.itemData.imageIds ?? [],
-              ],
-            }),
-            {},
-          );
-        const catalogImages = await this.catalogApi.batchRetrieveCatalogObjects(
-          {
-            objectIds: Array.from(
-              new Set(
-                result.relatedObjects
-                  .filter((item) => item.type === 'ITEM')
-                  .map((item) => item.itemData.imageIds ?? [])
-                  .flat(),
-              ),
-            ),
-          },
-        );
-
-        const variationToImageMap = catalogImages.result.objects.reduce(
-          (acc, image) => ({
-            ...acc,
-            [Object.values(catalogLinkMap).find(([_, arr2]) =>
-              arr2.includes(image.id),
-            )[0]]: image.imageData,
-          }),
-          {},
-        );
-
-        return variationToImageMap;
-      }
+      
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
