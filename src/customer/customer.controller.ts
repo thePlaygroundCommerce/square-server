@@ -6,15 +6,22 @@ import {
   Param,
   Post,
   Put,
+  UseFilters,
 } from '@nestjs/common';
 import {
+  ApiError,
+  ApiResponse,
   CreateCustomerRequest,
   CustomersApi,
+  SearchCustomersRequest,
+  SearchCustomersResponse,
   UpdateCustomerRequest,
 } from 'square';
+import { ApiErrorFilter } from 'src/order-api/order-api.service';
 import { SquareClient } from 'src/square-client/square-client';
 
-@Controller('customer')
+@Controller('customers')
+@UseFilters(ApiErrorFilter)
 export class CustomerController {
   customersApi: CustomersApi;
 
@@ -24,12 +31,7 @@ export class CustomerController {
 
   @Get(':customerId')
   async getCustomer(@Param('customerId') customerId: string) {
-    try {
-      return await this.customersApi.retrieveCustomer(customerId);
-    } catch (error) {
-      console.log(error);
-      return error.result;
-    }
+    return await this.customersApi.retrieveCustomer(customerId);
   }
 
   @Delete(['delete', ':customerId'])
@@ -60,13 +62,25 @@ export class CustomerController {
     }
   }
 
+  @Post('search')
+  async searchCustomers(
+    @Body() body: SearchCustomersRequest,
+  ): Promise<ApiResponse<SearchCustomersResponse>> {
+    try {
+      const res = await this.customersApi.searchCustomers(body);
+      console.debug('Response returned: ', res.statusCode);
+      return res;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return error.result;
+      } else {
+        console.log('Unexpected error occurred: ', error);
+      }
+    }
+  }
+
   @Post('create')
   async createCustomer(@Body() newCustomer: CreateCustomerRequest) {
-    try {
-      return await this.customersApi.createCustomer(newCustomer);
-    } catch (error) {
-      console.log(error);
-      return error.result;
-    }
+    return await this.customersApi.createCustomer(newCustomer);
   }
 }
