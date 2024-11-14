@@ -86,7 +86,7 @@ export class CatalogController {
   @Get('info')
   async getCatalogInformation() {
     const catalogList = (
-      await this.catalogApi.listCatalog(undefined, 'CATEGORY,TAX,DISCOUNT')
+      await this.catalogApi.listCatalog(undefined, 'CATEGORY,TAX,DISCOUNT,ITEM_OPTION')
     ).result.objects;
 
     return catalogList.reduce(

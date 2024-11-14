@@ -23,6 +23,11 @@ import { CheckoutService } from './checkout/checkout.service';
     CustomerController,
     CategoriesController,
   ],
-  providers: [SquareClient, CatalogApiService, OrderApiService, CheckoutService],
+  providers: [
+    SquareClient,
+    CatalogApiService,
+    OrderApiService,
+    CheckoutService,
+  ],
 })
 export class AppModule {}
