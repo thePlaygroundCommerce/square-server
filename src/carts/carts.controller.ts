@@ -45,7 +45,7 @@ export class CartsController {
   @Post('create')
   async createCart(@Body() req: CreateOrderRequest): Promise<CartOpResponse> {
     const { order, errors } = (await this.orderService.createOrder(req)).result;
-    const data = this.getLineItemCatalogData(order.lineItems ?? []);
+    const data = await this.getLineItemCatalogData(order.lineItems ?? []);
     return {
       order,
       ...data,
@@ -59,7 +59,7 @@ export class CartsController {
   ): Promise<CartOpResponse> {
     const { order, errors } = (await this.orderService.calculatetOrder(req))
       .result;
-    const data = this.getLineItemCatalogData(order.lineItems ?? []);
+    const data = await this.getLineItemCatalogData(order.lineItems ?? []);
     return {
       order,
       ...data,
@@ -78,7 +78,7 @@ export class CartsController {
     const { order } = (await this.orderService.updateOrder(orderId, req))
       .result;
 
-    const data = this.getLineItemCatalogData(order.lineItems ?? []);
+    const data = await this.getLineItemCatalogData(order.lineItems ?? []);
     return {
       order,
       ...data,
@@ -108,6 +108,7 @@ export class CartsController {
   }
 
   async getLineItemCatalogData(lineItems: OrderLineItem[]) {
+    if(lineItems.length == 0) return {}
     const objIds = lineItems.map(({ catalogObjectId }) => catalogObjectId);
     const { objects: itemVariationObjs, relatedObjects } = (
       await this.catalogApi.batchRetrieveCatalogObjects({
@@ -158,7 +159,7 @@ export class CartsController {
       ),
     );
 
-    const optValueObjs = (
+    const catalogObjs = (
       await this.catalogApi.batchRetrieveCatalogObjects({
         objectIds: [
           ...imageIds,
@@ -167,7 +168,10 @@ export class CartsController {
             .flat() as string[]),
         ],
       })
-    ).result.objects.filter(({ type }) => type === 'ITEM_OPTION_VAL');
+    ).result.objects
+    
+    const optValueObjs = catalogObjs.filter(({ type }) => type === 'ITEM_OPTION_VAL');
+    const imgObjs = catalogObjs.filter(({ type }) => type === 'IMAGE');
 
     const options = Object.fromEntries(
       Object.entries(variationToOptionTree).map(([itemId, obj]) => {
@@ -190,10 +194,9 @@ export class CartsController {
     ).reduce((acc: {}, { variationIds: [id], imageIds: [imageId] }) => {
       return {
         ...acc,
-        [id]: optValueObjs.find(({ id }) => id === imageId).imageData,
+        [id]: imgObjs.find(({ id }) => id === imageId)?.imageData,
       };
     }, {});
-
     return {
       options,
       relatedObjects,
