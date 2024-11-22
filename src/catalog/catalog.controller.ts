@@ -20,15 +20,18 @@ import {
   SearchCatalogItemsResponse,
   BatchRetrieveCatalogObjectsResponse,
 } from 'square';
+import { CatalogApiService } from 'src/services/catalog/catalog.service';
 import { SquareClient } from 'src/square-client/square-client';
 
 @Controller('catalog')
 export class CatalogController {
   catalogApi: CatalogApi;
+  catalogService: CatalogApiService
   private readonly logger = new Logger(CatalogController.name);
 
-  constructor(SquareClient: SquareClient) {
+  constructor(SquareClient: SquareClient, service: CatalogApiService) {
     this.catalogApi = SquareClient.getClient().catalogApi;
+    this.catalogService = service;
   }
 
   @Post('search')
@@ -103,18 +106,7 @@ export class CatalogController {
     @Param()
     { slug }: { slug: string },
   ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
-    try {
-      const res = await this.catalogApi.retrieveCatalogObject(slug, true);
-      console.debug('Response returned: ', res.statusCode);
-      return res;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.log('Error Response returned: ', error);
-        return error.result;
-      } else {
-        console.log('Unexpected error occurred: ', error);
-      }
-    }
+    return this.catalogService.getProduct(slug)
   }
 
   @Post()

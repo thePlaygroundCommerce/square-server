@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CatalogApiService } from './catalog-api.service';
+import { CatalogApiService } from './catalog.service';
 
 describe('CatalogApiService', () => {
   let service: CatalogApiService;
