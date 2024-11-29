@@ -20,14 +20,16 @@ import {
   SearchCatalogItemsResponse,
   BatchRetrieveCatalogObjectsResponse,
 } from 'square';
+import { CatalogApiService } from 'src/catalog-api/catalog-api.service';
 import { SquareClient } from 'src/square-client/square-client';
 
 @Controller('catalog')
 export class CatalogController {
   catalogApi: CatalogApi;
+
   private readonly logger = new Logger(CatalogController.name);
 
-  constructor(SquareClient: SquareClient) {
+  constructor(SquareClient: SquareClient, private catalogService: CatalogApiService) {
     this.catalogApi = SquareClient.getClient().catalogApi;
   }
 
@@ -102,10 +104,9 @@ export class CatalogController {
   async retrieveCatalogObject(
     @Param()
     { slug }: { slug: string },
-  ): Promise<ApiResponse<RetrieveCatalogObjectResponse>> {
+  ): Promise<RetrieveCatalogObjectResponse> {
     try {
-      const res = await this.catalogApi.retrieveCatalogObject(slug, true);
-      console.debug('Response returned: ', res.statusCode);
+      const res = await this.catalogService.getProduct(slug);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
