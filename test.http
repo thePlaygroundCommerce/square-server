@@ -1,13 +1,18 @@
 @baseurl="http://localhost:3000"
 
+###
+
+GET http://localhost:3000/catalog/info HTTP/1.1
+
+###
 
 GET {{baseurl}}/checkout/order/12312/2342342?bam=wham&wham=Limp HTTP/1.1
 
 ###
-http://localhost:3000/catalog/info HTTP/1.1
+http://localhost:3000/catalog/SYY7FIS7MJHPPRUXQZ4R2WDM HTTP/1.1
 
 ###
-POST http://localhost:3000/catalog/search/objects HTTP/1.1
+POST http://localhost:3000/catalog/search HTTP/1.1
 Content-Type: application/json
 
 {

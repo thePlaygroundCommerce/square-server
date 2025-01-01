@@ -93,9 +93,10 @@ export class CheckoutController {
   @UseFilters(ApiErrorFilter)
   async postSuccessfulCheckout(
     @Res() res: Response,
-    @Query() { redirect, cartId }: any,
+    @Param() { id } : { id: string},
+    @Query() { redirect }: any,
   ): Promise<void> {
-    await this.checkoutService.processSuccessfulCheckout(cartId);
+    await this.checkoutService.processSuccessfulCheckout(id);
 
     res.redirect(redirect);
   }

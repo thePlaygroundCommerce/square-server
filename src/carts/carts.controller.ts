@@ -43,18 +43,27 @@ export class CartsController {
   }
 
   @Post('create')
-  async createCart(
-    @Body() req: CreateOrderRequest,
-  ): Promise<ApiResponse<CreateOrderResponse>> {
-    return await this.orderService.createOrder(req);
+  async createCart(@Body() req: CreateOrderRequest): Promise<CartOpResponse> {
+    const { order, errors } = (await this.orderService.createOrder(req)).result;
+    const data = await this.getLineItemCatalogData(order.lineItems ?? []);
+    return {
+      order,
+      ...data,
+    };
   }
 
   @Post('calculate')
   async calculateCart(
     @Body()
     req: CalculateOrderRequest,
-  ): Promise<ApiResponse<UpdateOrderResponse>> {
-    return await this.orderService.calculatetOrder(req);
+  ): Promise<CartOpResponse> {
+    const { order, errors } = (await this.orderService.calculatetOrder(req))
+      .result;
+    const data = await this.getLineItemCatalogData(order.lineItems ?? []);
+    return {
+      order,
+      ...data,
+    };
   }
 
   @Put('update/:orderId')
@@ -65,54 +74,81 @@ export class CartsController {
       fieldsToClear: string[];
     },
     @Param('orderId') orderId: string,
-  ): Promise<ApiResponse<UpdateOrderResponse>> {
-    return await this.orderService.updateOrder(orderId, req);
+  ): Promise<CartOpResponse> {
+    const { order } = (await this.orderService.updateOrder(orderId, req))
+      .result;
+
+    const data = await this.getLineItemCatalogData(order.lineItems ?? []);
+    return {
+      order,
+      ...data,
+    };
   }
 
   @Get(':orderId')
-  async getCart(
-    @Param('orderId') orderId,
-  ): Promise<ApiResponse<RetrieveOrderResponse>['result']> {
+  async getCart(@Param('orderId') orderId: string): Promise<CartOpResponse> {
     const result: {
       imageMap?: { [id: string]: CatalogImage };
       relatedObjects?: CatalogObject[];
+      options?: Simplify<Simplify<CatalogObject[]>>;
       order?: Order;
     } = {};
     const { order, errors } = (await this.orderService.getOrder(orderId))
       .result;
 
+    const { variationToImageMap, options, relatedObjects } =
+      await this.getLineItemCatalogData(order.lineItems ?? []);
+
     result.order = order;
+    result.relatedObjects = relatedObjects;
+    result.imageMap = variationToImageMap;
+    result.options = options;
 
-    const objIds = order.lineItems.map(
-      ({ catalogObjectId }) => catalogObjectId,
-    );
+    return result;
+  }
 
-    const { relatedObjects } = (
+  async getLineItemCatalogData(lineItems: OrderLineItem[]) {
+    if(lineItems.length == 0) return {}
+    const objIds = lineItems.map(({ catalogObjectId }) => catalogObjectId);
+    const { objects: itemVariationObjs, relatedObjects } = (
       await this.catalogApi.batchRetrieveCatalogObjects({
         objectIds: objIds,
         includeRelatedObjects: true,
       })
     ).result;
 
-    result.relatedObjects = relatedObjects;
+    const variationToOptionTree = itemVariationObjs.reduce<{
+      [id: string]: {
+        [id: string]: (string | CatalogObject)[];
+      };
+    }>((acc, { id, itemVariationData: { itemOptionValues } }) => {
+      acc[id] = {};
+      if (!itemOptionValues) return acc;
+      itemOptionValues.forEach(({ itemOptionId, itemOptionValueId }) => {
+        if (!acc[id][itemOptionId]) acc[id][itemOptionId] = [itemOptionValueId];
+        else acc[id][itemOptionId].push(itemOptionValueId);
+      });
 
-    type Simplify<T> = { [id: string]: T };
+      return acc;
+    }, {});
 
     // links item obj to obj
-    const catalogLinkMap: Simplify<{ variationIds: any[]; imageIds: any[] }> =
-      relatedObjects
-        ?.filter((item) => item.type === 'ITEM')
-        .reduce((acc, item) => {
-          return {
-            ...acc,
-            [item.id]: {
-              variationIds: objIds.filter((id) =>
-                item.itemData.variations.map(({ id }) => id).includes(id),
-              ),
-              imageIds: item.itemData.imageIds ?? [],
-            },
-          };
-        }, {});
+    const itemToVariationAndImageMap: Simplify<{
+      variationIds: any[];
+      imageIds: any[];
+    }> = relatedObjects
+      ?.filter((item) => item.type === 'ITEM')
+      .reduce((acc, item) => {
+        return {
+          ...acc,
+          [item.id]: {
+            variationIds: objIds.filter((id) =>
+              item.itemData.variations.map(({ id }) => id).includes(id),
+            ),
+            imageIds: item.itemData.imageIds ?? [],
+          },
+        };
+      }, {});
 
     const imageIds = Array.from(
       new Set(
@@ -123,25 +159,57 @@ export class CartsController {
       ),
     );
 
-    if (imageIds.length === 0) return result;
-
-    const catalogImages = (
+    const catalogObjs = (
       await this.catalogApi.batchRetrieveCatalogObjects({
-        objectIds: imageIds,
+        objectIds: [
+          ...imageIds,
+          ...(Object.values(variationToOptionTree)
+            .map((obj) => Object.values(obj).flat())
+            .flat() as string[]),
+        ],
       })
-    ).result.objects;
+    ).result.objects
+    
+    const optValueObjs = catalogObjs.filter(({ type }) => type === 'ITEM_OPTION_VAL');
+    const imgObjs = catalogObjs.filter(({ type }) => type === 'IMAGE');
+
+    const options = Object.fromEntries(
+      Object.entries(variationToOptionTree).map(([itemId, obj]) => {
+        return [
+          itemId,
+          Object.fromEntries(
+            Object.entries(obj).map(([id, arr]) => {
+              const newArr = arr.map((id) =>
+                optValueObjs.find(({ id: objId }) => id === objId),
+              );
+              return [id, newArr];
+            }),
+          ),
+        ];
+      }),
+    );
 
     const variationToImageMap: { [id: string]: CatalogImage } = Object.values(
-      catalogLinkMap,
+      itemToVariationAndImageMap,
     ).reduce((acc: {}, { variationIds: [id], imageIds: [imageId] }) => {
       return {
         ...acc,
-        [id]: catalogImages.find(({ id }) => id === imageId).imageData,
+        [id]: imgObjs.find(({ id }) => id === imageId)?.imageData,
       };
     }, {});
-
-    result.imageMap = variationToImageMap;
-
-    return result;
+    return {
+      options,
+      relatedObjects,
+      variationToImageMap,
+    };
   }
 }
+
+export type Simplify<T> = { [id: string]: T };
+
+type CartOpResponse = {
+  imageMap?: { [id: string]: CatalogImage };
+  relatedObjects?: CatalogObject[];
+  options?: Simplify<Simplify<CatalogObject[]>>;
+  order?: Order;
+};

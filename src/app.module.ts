@@ -7,7 +7,6 @@ import { SquareClient } from './square-client/square-client';
 import { CatalogApiService } from './catalog-api/catalog-api.service';
 import { OrderApiService } from './order-api/order-api.service';
 import { CustomerController } from './customer/customer.controller';
-import { CategoriesController } from './categories/categories.controller';
 import { CheckoutService } from './checkout/checkout.service';
 
 @Module({
@@ -21,8 +20,12 @@ import { CheckoutService } from './checkout/checkout.service';
     CatalogController,
     CheckoutController,
     CustomerController,
-    CategoriesController,
   ],
-  providers: [SquareClient, CatalogApiService, OrderApiService, CheckoutService],
+  providers: [
+    SquareClient,
+    CatalogApiService,
+    OrderApiService,
+    CheckoutService,
+  ],
 })
 export class AppModule {}
