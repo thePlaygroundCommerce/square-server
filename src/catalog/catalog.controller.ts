@@ -19,9 +19,15 @@ import {
   SearchCatalogItemsRequest,
   SearchCatalogItemsResponse,
   BatchRetrieveCatalogObjectsResponse,
+  CatalogObject,
 } from 'square';
-import { CatalogApiService } from 'src/catalog-api/catalog-api.service';
+import { Simplify } from 'src/carts/carts.controller';
+import {
+  CatalogApiService,
+  SearchProductsResponse,
+} from 'src/catalog-api/catalog-api.service';
 import { SquareClient } from 'src/square-client/square-client';
+import { addAbortSignal } from 'stream';
 
 @Controller('catalog')
 export class CatalogController {
@@ -29,17 +35,19 @@ export class CatalogController {
 
   private readonly logger = new Logger(CatalogController.name);
 
-  constructor(SquareClient: SquareClient, private catalogService: CatalogApiService) {
+  constructor(
+    SquareClient: SquareClient,
+    private catalogService: CatalogApiService,
+  ) {
     this.catalogApi = SquareClient.getClient().catalogApi;
   }
 
   @Post('search')
   async searchCatalogItems(
     @Body() body: SearchCatalogItemsRequest,
-  ): Promise<ApiResponse<SearchCatalogItemsResponse>> {
+  ): Promise<SearchProductsResponse> {
     try {
-      const res = await this.catalogApi.searchCatalogItems(body);
-      console.debug('Response returned: ', res.statusCode);
+      const res = await this.catalogService.searchProducts(body);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {
@@ -86,28 +94,44 @@ export class CatalogController {
   }
 
   @Get('info')
-  async getCatalogInformation() {
+  async getCatalogInformation(): Promise<{
+    categoryNameMap: { [id: string]: string };
+    objects: { [type: string]: CatalogObject[] };
+  }> {
     const catalogList = (
-      await this.catalogApi.listCatalog(undefined, 'CATEGORY,TAX,DISCOUNT,ITEM_OPTION')
+      await this.catalogApi.listCatalog(
+        undefined,
+        'CATEGORY,TAX,DISCOUNT,ITEM_OPTION',
+      )
     ).result.objects;
 
-    return catalogList.reduce(
+    const objects = catalogList.reduce<Simplify<CatalogObject[]>>(
       (acc, obj) => ({
         ...acc,
         [obj.type]: acc[obj.type] ? [...acc[obj.type], obj] : [obj],
       }),
       {},
     );
+
+    const categoryNameMap = objects.CATEGORY?.reduce(
+      (acc, { id, categoryData: { name } }) => ({ ...acc, [name]: id }),
+      {},
+    );
+
+    return {
+      objects,
+      categoryNameMap,
+    };
   }
 
   @Get(':slug')
   async retrieveCatalogObject(
     @Param()
     { slug }: { slug: string },
-  ): Promise<RetrieveCatalogObjectResponse> {
+  ): Promise<any> {
     try {
-      const res = await this.catalogService.getProduct(slug);
-      return res;
+      const product = await this.catalogService.getProduct(slug);
+      return product;
     } catch (error) {
       if (error instanceof ApiError) {
         console.log('Error Response returned: ', error);
@@ -141,8 +165,6 @@ export class CatalogController {
       //   {},
       // );
       // return result;
-
-      
     } catch (error) {
       if (error instanceof ApiError) {
         return error.result;
