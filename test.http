@@ -2,7 +2,7 @@
 
 ###
 
-GET http://localhost:3000/catalog/info HTTP/1.1
+GET https://square-backend.herokuapp.com/catalog/info HTTP/1.1
 
 ###
 
@@ -13,11 +13,12 @@ http://localhost:3000/catalog/SYY7FIS7MJHPPRUXQZ4R2WDM HTTP/1.1
 
 ###
 POST http://localhost:3000/catalog/search HTTP/1.1
+# POST https://square-backend.herokuapp.com/catalog/search HTTP/1.1
 Content-Type: application/json
 
 {
   "categoryIds": [
-    "NAS3OIKYNTIDW2Z74VDOLYGQ"
+    "LCDPBS5UCQMX2O353E5OSA5X"
   ]
 }
 
