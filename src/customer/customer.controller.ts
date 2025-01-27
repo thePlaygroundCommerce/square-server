@@ -12,6 +12,7 @@ import {
   ApiError,
   ApiResponse,
   CreateCustomerRequest,
+  CreateCustomerResponse,
   CustomersApi,
   SearchCustomersRequest,
   SearchCustomersResponse,
@@ -82,5 +83,50 @@ export class CustomerController {
   @Post('create')
   async createCustomer(@Body() newCustomer: CreateCustomerRequest) {
     return await this.customersApi.createCustomer(newCustomer);
+  }
+
+  @Post('register')
+  async registerCustomer(
+    @Body()
+    {
+      emailAddress,
+      phoneNumber,
+    }: {
+      emailAddress: string;
+      firstName?: string;
+      lastName?: string;
+      phoneNumber?: string;
+    },
+  ) {
+    let opResult: CreateCustomerResponse = {
+      errors: [],
+    };
+
+    const {
+      result: { customers, ...rest },
+    } = await this.customersApi.searchCustomers({
+      query: {
+        filter: {
+          emailAddress: { exact: emailAddress },
+          phoneNumber: { exact: phoneNumber },
+        },
+      },
+    });
+
+    if (!customers) {
+      const { result } = await this.customersApi.createCustomer({
+        emailAddress,
+        phoneNumber,
+      });
+
+      opResult = result;
+    } else {
+      opResult = {
+        customer: customers[0],
+        ...rest,
+      };
+    }
+
+    return opResult;
   }
 }
