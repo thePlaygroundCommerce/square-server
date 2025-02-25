@@ -96,7 +96,7 @@ export class CheckoutController {
     @Param() { id } : { id: string},
     @Query() { redirect }: any,
   ): Promise<void> {
-    await this.checkoutService.processSuccessfulCheckout(id);
+    // await this.checkoutService.processSuccessfulCheckout(id);
 
     res.redirect(redirect);
   }
