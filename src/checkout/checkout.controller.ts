@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   Post,
   Query,
@@ -74,6 +75,8 @@ export class CheckoutController {
     @Req() req: Request,
     @Param() { id }: { id: string },
     @Query() { redirect }: any,
+    @Headers('referer') ref: string,
+    @Headers('host') host: string,
   ): Promise<ApiResponse<CreatePaymentLinkResponse>> {
     const redirectUrl = new URL(
       `${req.protocol}://${req.get(
@@ -93,7 +96,7 @@ export class CheckoutController {
   @UseFilters(ApiErrorFilter)
   async postSuccessfulCheckout(
     @Res() res: Response,
-    @Param() { id } : { id: string},
+    @Param() { id }: { id: string },
     @Query() { redirect }: any,
   ): Promise<void> {
     // await this.checkoutService.processSuccessfulCheckout(id);
