@@ -100,17 +100,10 @@ export class CheckoutService {
   }
 
   // TODO: Do we reaally want to delete line items? Or should we change state of order to signal client to use new cart id?
-  async processSuccessfulCheckout(id: string) {
-    const {
-      result: { order },
-    } = await this.orderService.getOrder(id);
+  // async processSuccessfulCheckout(id: string) {
+  //   const {
+  //     result: { order },
+  //   } = await this.orderService.getOrder(id);
 
-    return await this.orderService.updateOrder(id, {
-      order: {
-        locationId: order.locationId,
-        version: order.version,
-      },
-      fieldsToClear: ['line_items'],
-    });
-  }
+  // }
 }
